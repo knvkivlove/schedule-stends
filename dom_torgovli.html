@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <title>График Служения</title>
+    <title>График Служения со стендом</title>
     <style>
       /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА (МЕНЯЙТЕ ТОЛЬКО ЗДЕСЬ) --- */
       :root {
@@ -88,7 +88,7 @@
         height: 100%;
         background: transparent;
         border: none;
-        color: var(--input-text-color); /* Используем цвет для ФИО */
+        color: var(--input-text-color); /* Основной цвет ФИО (ваш) */
         text-align: center;
         font-size: 1em;
         padding: 10px 0;
@@ -103,9 +103,16 @@
       .slot-input.occupied {
         font-weight: bold;
       }
+
+      /* Правило, которое ВСЕГДА срабатывает, когда поле отключено (незанятые слоты) */
       .slot-input:disabled {
         cursor: not-allowed;
-        color: #aaa;
+        color: #aaa; /* Цвет для ПУСТЫХ, но недоступных ячеек */
+      }
+
+      /* Правило, которое ПЕРЕБИВАЕТ disabled, если ячейка занята (filled/occupied) */
+      .slot-input.occupied:disabled {
+        color: var(--input-text-color); /* Цвет ФИО, который вы задали в root */
       }
 
       .delete-btn {
