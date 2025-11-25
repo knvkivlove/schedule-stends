@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <title>График Служения</title>
     <style>
-      /* --- СТИЛИ (Те же самые) --- */
+      /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА (МЕНЯЙТЕ ТОЛЬКО ЗДЕСЬ) --- */
+      :root {
+        /* Основной цвет (рамки, время, заголовки, кнопки) */
+        --main-color: rgb(99, 250, 225);
+        /* Цвет текста, которым записываются служители (ФИО) */
+        --input-text-color: rgb(255, 223, 178);
+        /* Фон ячеек времени и заголовков */
+        --header-bg-color: #051d3a;
+      }
+
+      /* --- СТИЛИ (CSS) --- */
       body {
         background-color: #1a1a1a;
         color: white;
@@ -14,8 +24,10 @@
         align-items: center;
         padding: 20px;
       }
+
+      /* --- Сетка расписания --- */
       .location-card {
-        border: 2px solid yellow;
+        border: 2px solid var(--main-color);
         border-radius: 5px;
         margin-bottom: 30px;
         width: 95%;
@@ -23,30 +35,39 @@
         overflow-x: auto;
         background-color: #000;
       }
+
       .card-header {
         text-align: center;
-        color: yellow;
+        color: var(--main-color);
         font-weight: bold;
         padding: 10px;
         font-size: 1.2em;
-        border-bottom: 1px solid yellow;
+        border-bottom: 1px solid var(--main-color);
       }
+
       .date-info {
         display: flex;
         gap: 20px;
         padding: 10px;
-        color: yellow;
+        color: var(--main-color);
         font-weight: bold;
         border-bottom: 1px solid #555;
         background: #222;
       }
+
+      /* Изменение: День теперь рядом с датой */
+      .date-info span:first-child {
+        margin-right: 15px; /* Отступ между датой и днем */
+      }
+
       .schedule-grid {
         display: grid;
         border-collapse: collapse;
       }
+
       .time-header {
-        background-color: #000;
-        color: yellow;
+        background-color: var(--header-bg-color);
+        color: var(--main-color);
         padding: 10px;
         text-align: center;
         font-weight: bold;
@@ -54,24 +75,27 @@
         border-bottom: 1px solid white;
         min-width: 60px;
       }
+
       .slot-cell {
         border-right: 1px solid white;
         border-bottom: 1px solid white;
         min-height: 40px;
         position: relative;
       }
+
       .slot-input {
         width: 100%;
         height: 100%;
         background: transparent;
         border: none;
-        color: white;
+        color: var(--input-text-color); /* Используем цвет для ФИО */
         text-align: center;
         font-size: 1em;
         padding: 10px 0;
         cursor: pointer;
         min-width: 60px;
       }
+
       .slot-input:focus {
         background-color: #333;
         outline: none;
@@ -83,6 +107,7 @@
         cursor: not-allowed;
         color: #aaa;
       }
+
       .delete-btn {
         display: none;
         position: absolute;
@@ -98,6 +123,7 @@
         font-size: 12px;
         z-index: 10;
       }
+
       .controls {
         margin-bottom: 20px;
         background: #333;
@@ -109,6 +135,7 @@
         flex-wrap: wrap;
         justify-content: center;
       }
+
       .status-label {
         color: white;
         font-weight: bold;
@@ -117,6 +144,7 @@
         border-radius: 4px;
         background: #555;
       }
+
       button {
         padding: 10px 20px;
         cursor: pointer;
@@ -125,21 +153,22 @@
         border-radius: 4px;
         transition: 0.3s;
       }
+
       .btn-user {
-        background-color: yellow;
+        background-color: var(--main-color);
         color: black;
       }
       .btn-admin {
         background-color: orange;
         color: black;
       }
-      .btn-logout {
-        background-color: #888;
+      .btn-config {
+        background-color: #00bcd4;
         color: white;
         display: none;
       }
-      .btn-config {
-        background-color: #00bcd4;
+      .btn-logout {
+        background-color: #888;
         color: white;
         display: none;
       }
@@ -175,7 +204,7 @@
         color: #ccc;
       }
       #loading {
-        color: yellow;
+        color: var(--main-color);
         font-size: 1.2em;
         margin-top: 20px;
       }
@@ -338,7 +367,7 @@
           });
       }
 
-      // --- ИНТЕРФЕЙС ---
+      // --- ИНТЕРФЕЙС И ЛОГИКА ---
 
       function renderSchedule() {
         const appDiv = document.getElementById("app");
@@ -363,6 +392,7 @@
         card.className = "location-card";
 
         const dateObj = new Date(dayData.date);
+        // Дни недели в верхнем регистре
         const daysOfWeek = [
           "ВОСКРЕСЕНЬЕ",
           "ПОНЕДЕЛЬНИК",
@@ -377,9 +407,14 @@
           : daysOfWeek[dateObj.getDay()];
         const ruDate = dayData.date.split("-").reverse().join(".");
 
+        // ИЗМЕНЕНИЕ: Формат заголовка: "Название" / "Дата" + "День"
         card.innerHTML = `
                 <div class="card-header">${locName}</div>
-                <div class="date-info"><span>${ruDate}</span><span style="margin-left:auto;">${dayName}</span></div>
+                <div class="date-info">
+                    <span>${ruDate}</span> 
+                    <span>${dayName}</span> 
+                    <span style="margin-left:auto;">${dayData.start}:00 - ${dayData.end}:00</span>
+                </div>
             `;
 
         const startH = parseInt(dayData.start);
@@ -451,6 +486,8 @@
       }
 
       // --- УПРАВЛЕНИЕ ---
+
+      // ... (остальные функции управления config/login/logout остались без изменений)
 
       function toggleConfigPanel() {
         const panel = document.getElementById("configPanel");
