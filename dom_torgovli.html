@@ -6,17 +6,26 @@
     <style>
       /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА (МЕНЯЙТЕ ТОЛЬКО ЗДЕСЬ) --- */
       :root {
-        /* Основной цвет (рамки, время, заголовки, кнопки) */
-        --main-color: rgb(250, 173, 6);
-        /* Цвет текста, которым записываются служители (ФИО) */
-        --input-text-color: rgb(134, 255, 245);
-        /* Фон ячеек времени и заголовков */
-        --header-bg-color: #051d3a;
+        --bg-main-color: #1a1a1a;          /* 1. Цвет бэкграунда основной */
+        --border-main-color: rgb(250, 173, 6); /* 2. Цвет рамки основной */
+        --border-cell-color: #ffffff;      /* 3. Цвет рамки для ячеек */
+        
+        --header-table-bg: #000000;        /* 4. Цвет шапки таблицы (название точки) */
+        --header-table-text: rgb(250, 173, 6); /* 5. Цвет текста заголовка в шапке таблицы */
+        
+        --header-date-bg: #222222;         /* 6. Цвет шапки для названия дней и даты */
+        --header-date-text: rgb(250, 173, 6); /* 7. Цвет текста для названия дней и даты */
+        
+        --header-time-bg: #051d3a;         /* 8. Цвет шапки для временных интервалов */
+        --header-time-text: rgb(250, 173, 6); /* 9. Цвет текста для времени */
+        
+        --cell-input-bg: transparent;      /* 10. Цвет ячеек для записи (фон) */
+        --cell-input-text: rgb(134, 255, 245); /* 11. Цвет текста для записи (ФИО) */
       }
 
       /* --- СТИЛИ (CSS) --- */
       body {
-        background-color: #1a1a1a;
+        background-color: var(--bg-main-color);
         color: white;
         font-family: Arial, sans-serif;
         display: flex;
@@ -27,7 +36,7 @@
 
       /* --- Сетка расписания --- */
       .location-card {
-        border: 2px solid var(--main-color);
+        border: 2px solid var(--border-main-color);
         border-radius: 5px;
         margin-bottom: 30px;
         width: 95%;
@@ -38,24 +47,24 @@
 
       .card-header {
         text-align: center;
-        color: var(--main-color);
+        background-color: var(--header-table-bg);
+        color: var(--header-table-text);
         font-weight: bold;
         padding: 10px;
         font-size: 1.2em;
-        border-bottom: 1px solid var(--main-color);
+        border-bottom: 1px solid var(--border-main-color);
       }
 
       .date-info {
         display: flex;
         gap: 20px;
         padding: 10px;
-        color: var(--main-color);
+        color: var(--header-date-text);
         font-weight: bold;
-        border-bottom: 1px solid #555;
-        background: #222;
+        border-bottom: 1px solid var(--border-cell-color);
+        background: var(--header-date-bg);
       }
 
-      /* Изменение: День теперь рядом с датой */
       .date-info span:first-child {
         margin-right: 15px; /* Отступ между датой и днем */
       }
@@ -66,19 +75,19 @@
       }
 
       .time-header {
-        background-color: var(--header-bg-color);
-        color: var(--main-color);
+        background-color: var(--header-time-bg);
+        color: var(--header-time-text);
         padding: 10px;
         text-align: center;
         font-weight: bold;
-        border-right: 1px solid white;
-        border-bottom: 1px solid white;
-        min-width: 60px;
+        border-right: 1px solid var(--border-cell-color);
+        border-bottom: 1px solid var(--border-cell-color);
+        min-width: 80px;
       }
 
       .slot-cell {
-        border-right: 1px solid white;
-        border-bottom: 1px solid white;
+        border-right: 1px solid var(--border-cell-color);
+        border-bottom: 1px solid var(--border-cell-color);
         min-height: 40px;
         position: relative;
       }
@@ -86,33 +95,33 @@
       .slot-input {
         width: 100%;
         height: 100%;
-        background: transparent;
+        background: var(--cell-input-bg);
         border: none;
-        color: var(--input-text-color); /* Основной цвет ФИО (ваш) */
+        color: var(--cell-input-text);
         text-align: center;
         font-size: 1em;
         padding: 10px 0;
         cursor: pointer;
-        min-width: 60px;
+        min-width: 80px;
+        box-sizing: border-box;
       }
 
       .slot-input:focus {
         background-color: #333;
         outline: none;
       }
+      
       .slot-input.occupied {
         font-weight: bold;
       }
 
-      /* Правило, которое ВСЕГДА срабатывает, когда поле отключено (незанятые слоты) */
       .slot-input:disabled {
         cursor: not-allowed;
         color: #aaa; /* Цвет для ПУСТЫХ, но недоступных ячеек */
       }
 
-      /* Правило, которое ПЕРЕБИВАЕТ disabled, если ячейка занята (filled/occupied) */
       .slot-input.occupied:disabled {
-        color: var(--input-text-color); /* Цвет ФИО, который вы задали в root */
+        color: var(--cell-input-text);
       }
 
       .delete-btn {
@@ -162,7 +171,7 @@
       }
 
       .btn-user {
-        background-color: var(--main-color);
+        background-color: var(--border-main-color);
         color: black;
       }
       .btn-admin {
@@ -187,12 +196,13 @@
         border: 2px solid rgb(251, 255, 0);
         border-radius: 10px;
         width: 90%;
-        max-width: 800px;
+        max-width: 850px;
         margin-bottom: 20px;
       }
+      
       .config-row {
         display: flex;
-        gap: 10px;
+        gap: 8px;
         margin-bottom: 10px;
         flex-wrap: wrap;
         background: #444;
@@ -200,21 +210,27 @@
         border-radius: 5px;
         align-items: center;
       }
+      
       .config-input {
         padding: 5px;
         background: #fff;
         border: none;
         border-radius: 3px;
+        color: #000;
       }
+      
       label {
-        margin-right: 5px;
+        margin-right: 2px;
         color: #ccc;
+        font-size: 0.9em;
       }
+      
       #loading {
-        color: var(--main-color);
+        color: var(--border-main-color);
         font-size: 1.2em;
         margin-top: 20px;
       }
+      
       #errorMsg {
         color: red;
         font-weight: bold;
@@ -229,55 +245,22 @@
   <body>
     <div class="controls">
       <span id="statusLabel" class="status-label">Инициализация...</span>
-      <button
-        onclick="loginUser()"
-        id="loginUserBtn"
-        class="btn-user"
-        style="display: none"
-      >
-        Записаться
-      </button>
-      <button
-        onclick="loginAdmin()"
-        id="loginAdminBtn"
-        class="btn-admin"
-        style="display: none"
-      >
-        Администратор
-      </button>
-      <button onclick="toggleConfigPanel()" id="configBtn" class="btn-config">
-        ⚙️ Настроить график
-      </button>
-      <button onclick="logout()" id="logoutBtn" class="btn-logout">
-        Выйти
-      </button>
+      <button onclick="loginUser()" id="loginUserBtn" class="btn-user" style="display: none">Записаться</button>
+      <button onclick="loginAdmin()" id="loginAdminBtn" class="btn-admin" style="display: none">Администратор</button>
+      <button onclick="toggleConfigPanel()" id="configBtn" class="btn-config">⚙️ Настроить график</button>
+      <button onclick="logout()" id="logoutBtn" class="btn-logout">Выйти</button>
     </div>
 
     <div id="configPanel">
       <h3 style="color: orange; margin-top: 0">Конструктор Расписания</h3>
       <div style="margin-bottom: 15px">
         <label>Название точки:</label>
-        <input
-          type="text"
-          id="cfgLocationName"
-          class="config-input"
-          style="width: 200px"
-        />
+        <input type="text" id="cfgLocationName" class="config-input" style="width: 200px" />
       </div>
       <div id="daysContainer"></div>
-      <button
-        onclick="addDayRow()"
-        style="background: green; color: white; margin-top: 10px"
-      >
-        + Добавить день
-      </button>
+      <button onclick="addDayRow()" style="background: green; color: white; margin-top: 10px">+ Добавить день</button>
       <hr style="border-color: #555; margin: 20px 0" />
-      <button
-        onclick="saveConfiguration()"
-        style="background: orange; width: 100%"
-      >
-        СОХРАНИТЬ В ОБЛАКО
-      </button>
+      <button onclick="saveConfiguration()" style="background: orange; width: 100%">СОХРАНИТЬ В ОБЛАКО</button>
     </div>
 
     <div id="loading">Подключение к базе данных...</div>
@@ -285,7 +268,11 @@
     <div id="app"></div>
 
     <script>
-      // --- КОНФИГУРАЦИЯ ---
+      // --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ПАРОЛЕЙ ---
+      const PASS_USER = "123";      // Пароль для Записи (служителей)
+      const PASS_ADMIN = "54321";   // Пароль для Администратора
+
+      // --- КОНФИГУРАЦИЯ FIREBASE ---
       const firebaseConfig = {
         apiKey: "AIzaSyCEJanR9v_Pvkqu974w35hBuw2LW73jpPs",
         authDomain: "stends-1360c.firebaseapp.com",
@@ -296,7 +283,7 @@
         measurementId: "G-E6KVRVFSQL",
       };
 
-      // !!! ВАЖНО: УНИКАЛЬНЫЙ ID ДЛЯ КАЖДОЙ ТОЧКИ !!!
+      // !!! УНИКАЛЬНЫЙ ID ДЛЯ КАЖДОЙ ТОЧКИ !!!
       const LOCATION_ID = "stand_dom_torgovli";
 
       // Инициализация Firebase
@@ -308,8 +295,7 @@
       } catch (e) {
         document.getElementById("loading").style.display = "none";
         document.getElementById("errorMsg").style.display = "block";
-        document.getElementById("errorMsg").innerText =
-          "Ошибка запуска Firebase: " + e.message;
+        document.getElementById("errorMsg").innerText = "Ошибка запуска Firebase: " + e.message;
       }
 
       // Глобальные переменные
@@ -317,41 +303,27 @@
       let scheduleData = { config: {}, slots: {} };
 
       // --- ЛОГИКА БАЗЫ ДАННЫХ ---
-
       if (db) {
         const locRef = db.ref("locations/" + LOCATION_ID);
+        locRef.on("value", (snapshot) => {
+          const data = snapshot.val();
+          document.getElementById("loading").style.display = "none";
 
-        locRef.on(
-          "value",
-          (snapshot) => {
-            const data = snapshot.val();
-            document.getElementById("loading").style.display = "none";
-
-            if (data) {
-              scheduleData.config = data.config || {
-                locationName: "Без названия",
-                days: [],
-              };
-              scheduleData.slots = data.slots || {};
-            } else {
-              scheduleData.config = {
-                locationName: "Настройте график (Админ)",
-                days: [],
-              };
-              scheduleData.slots = {};
-            }
-
-            renderSchedule();
-            updateControls();
-          },
-          (error) => {
-            document.getElementById("loading").style.display = "none";
-            document.getElementById("errorMsg").style.display = "block";
-            document.getElementById("errorMsg").innerHTML =
-              "Ошибка доступа к базе.<br>Проверьте вкладку Rules в консоли Firebase.<br>" +
-              error.message;
+          if (data) {
+            scheduleData.config = data.config || { locationName: "Без названия", days: [] };
+            scheduleData.slots = data.slots || {};
+          } else {
+            scheduleData.config = { locationName: "Настройте график (Админ)", days: [] };
+            scheduleData.slots = {};
           }
-        );
+
+          renderSchedule();
+          updateControls();
+        }, (error) => {
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("errorMsg").style.display = "block";
+          document.getElementById("errorMsg").innerHTML = "Ошибка доступа к базе.<br>" + error.message;
+        });
       }
 
       function saveSlot(slotId, name) {
@@ -375,7 +347,6 @@
       }
 
       // --- ИНТЕРФЕЙС И ЛОГИКА ---
-
       function renderSchedule() {
         const appDiv = document.getElementById("app");
         appDiv.innerHTML = "";
@@ -384,8 +355,7 @@
         const slots = scheduleData.slots;
 
         if (!conf.days || conf.days.length === 0) {
-          appDiv.innerHTML =
-            '<h2 style="color:gray; text-align:center;">Расписание не настроено. Зайдите как Администратор.</h2>';
+          appDiv.innerHTML = '<h2 style="color:gray; text-align:center;">Расписание не настроено. Зайдите как Администратор.</h2>';
           return;
         }
 
@@ -399,50 +369,50 @@
         card.className = "location-card";
 
         const dateObj = new Date(dayData.date);
-        // Дни недели в верхнем регистре
-        const daysOfWeek = [
-          "ВОСКРЕСЕНЬЕ",
-          "ПОНЕДЕЛЬНИК",
-          "ВТОРНИК",
-          "СРЕДА",
-          "ЧЕТВЕРГ",
-          "ПЯТНИЦА",
-          "СУББОТА",
-        ];
-        const dayName = isNaN(dateObj.getDay())
-          ? "ДЕНЬ"
-          : daysOfWeek[dateObj.getDay()];
+        const daysOfWeek = ["ВОСКРЕСЕНЬЕ", "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"];
+        const dayName = isNaN(dateObj.getDay()) ? "ДЕНЬ" : daysOfWeek[dateObj.getDay()];
         const ruDate = dayData.date.split("-").reverse().join(".");
+        
+        // Получаем шаг из данных (по умолчанию 1)
+        const step = parseInt(dayData.step || 1);
 
-        // ИЗМЕНЕНИЕ: Формат заголовка: "Название" / "Дата" + "День"
         card.innerHTML = `
-                <div class="card-header">${locName}</div>
-                <div class="date-info">
-                    <span>${ruDate}</span> 
-                    <span>${dayName}</span> 
-                    <span style="margin-left:auto;">${dayData.start}:00 - ${dayData.end}:00</span>
-                </div>
-            `;
+          <div class="card-header">${locName}</div>
+          <div class="date-info">
+              <span>${ruDate}</span> 
+              <span>${dayName}</span> 
+              <span style="margin-left:auto;">${dayData.start}:00 - ${dayData.end}:00 (Шаг: ${step} ч.)</span>
+          </div>
+        `;
 
         const startH = parseInt(dayData.start);
         const endH = parseInt(dayData.end);
-        const hoursCount = endH - startH;
+        
+        // Вычисляем количество временных колонок
+        const intervalsCount = Math.floor((endH - startH) / step);
 
         const grid = document.createElement("div");
         grid.className = "schedule-grid";
-        grid.style.gridTemplateColumns = `repeat(${hoursCount}, 1fr)`;
+        grid.style.gridTemplateColumns = `repeat(${intervalsCount}, 1fr)`;
 
-        for (let h = startH; h < endH; h++) {
+        // Формируем заголовки времени с учетом шага
+        for (let i = 0; i < intervalsCount; i++) {
+          const currentStart = startH + (i * step);
+          const currentEnd = currentStart + step;
           const timeCell = document.createElement("div");
           timeCell.className = "time-header";
-          timeCell.innerText = `${h}-${h + 1}`;
+          timeCell.innerText = `${currentStart}-${currentEnd}`;
           grid.appendChild(timeCell);
         }
 
+        // Формируем ячейки для ввода
         for (let row = 0; row < dayData.slots; row++) {
-          for (let h = startH; h < endH; h++) {
+          for (let i = 0; i < intervalsCount; i++) {
+            const currentStart = startH + (i * step);
             const safeDate = dayData.date.replace(/\./g, "-");
-            const slotId = `slot_${safeDate}_${h}_${row}`;
+            
+            // Включаем значение шага в ID слота, чтобы данные не перемешивались при изменении структуры
+            const slotId = `slot_${safeDate}_h${currentStart}step${step}_r${row}`;
 
             const cell = document.createElement("div");
             cell.className = "slot-cell";
@@ -493,9 +463,6 @@
       }
 
       // --- УПРАВЛЕНИЕ ---
-
-      // ... (остальные функции управления config/login/logout остались без изменений)
-
       function toggleConfigPanel() {
         const panel = document.getElementById("configPanel");
         if (panel.style.display === "none" || panel.style.display === "") {
@@ -508,8 +475,7 @@
 
       function renderConfigForm() {
         const conf = scheduleData.config;
-        document.getElementById("cfgLocationName").value =
-          conf.locationName || "";
+        document.getElementById("cfgLocationName").value = conf.locationName || "";
         const container = document.getElementById("daysContainer");
         container.innerHTML = "";
         if (conf.days) conf.days.forEach((day) => addDayRowUI(container, day));
@@ -517,40 +483,41 @@
 
       function addDayRow() {
         const container = document.getElementById("daysContainer");
-        addDayRowUI(container, { date: "", start: 10, end: 17, slots: 2 });
+        addDayRowUI(container, { date: "", start: 10, end: 16, slots: 2, step: 1 });
       }
 
       function addDayRowUI(container, dayData) {
+        const currentStep = parseInt(dayData.step || 1);
         const div = document.createElement("div");
         div.className = "config-row";
         div.innerHTML = `
-                <label>Дата:</label>
-                <input type="date" class="cfg-date config-input" value="${
-                  dayData.date
-                }">
-                <label>C:</label>
-                <select class="cfg-start config-input">${generateHourOptions(
-                  dayData.start
-                )}</select>
-                <label>До:</label>
-                <select class="cfg-end config-input">${generateHourOptions(
-                  dayData.end
-                )}</select>
-                <label>Мест:</label>
-                <input type="number" class="cfg-slots config-input" value="${
-                  dayData.slots
-                }" min="1" max="10" style="width:50px;">
-                <button onclick="this.parentElement.remove()" style="background:red; padding: 5px 10px; font-size: 0.8em;">Удалить</button>
-            `;
+            <label>Дата:</label>
+            <input type="date" class="cfg-date config-input" value="${dayData.date}">
+            
+            <label>C:</label>
+            <select class="cfg-start config-input">${generateHourOptions(dayData.start)}</select>
+            
+            <label>До:</label>
+            <select class="cfg-end config-input">${generateHourOptions(dayData.end)}</select>
+            
+            <label>Шаг:</label>
+            <select class="cfg-step config-input">
+              <option value="1" ${currentStep === 1 ? "selected" : ""}>1 час</option>
+              <option value="2" ${currentStep === 2 ? "selected" : ""}>2 часа</option>
+            </select>
+
+            <label>Мест:</label>
+            <input type="number" class="cfg-slots config-input" value="${dayData.slots}" min="1" max="10" style="width:45px;">
+            
+            <button onclick="this.parentElement.remove()" style="background:red; padding: 5px 10px; font-size: 0.8em; color:white; margin-left:auto;">Удалить</button>
+        `;
         container.appendChild(div);
       }
 
       function generateHourOptions(selected) {
         let options = "";
         for (let i = 6; i <= 22; i++) {
-          options += `<option value="${i}" ${
-            i == selected ? "selected" : ""
-          }>${i}:00</option>`;
+          options += `<option value="${i}" ${i == selected ? "selected" : ""}>${i}:00</option>`;
         }
         return options;
       }
@@ -559,17 +526,39 @@
         const name = document.getElementById("cfgLocationName").value;
         const rows = document.querySelectorAll(".config-row");
         const newDays = [];
+        let validationFailed = false;
+
         rows.forEach((row) => {
           const date = row.querySelector(".cfg-date").value;
+          const start = parseInt(row.querySelector(".cfg-start").value);
+          const end = parseInt(row.querySelector(".cfg-end").value);
+          const step = parseInt(row.querySelector(".cfg-step").value);
+          const slots = parseInt(row.querySelector(".cfg-slots").value);
+
           if (date) {
+            if ((end - start) % step !== 0) {
+              alert(`Ошибка для даты ${date}: Временной интервал (${start}:00 - ${end}:00) должен нацело делиться на шаг в ${step} ч.`);
+              validationFailed = true;
+              return;
+            }
+            if (start >= end) {
+              alert(`Ошибка для даты ${date}: Время начала должно быть меньше времени окончания.`);
+              validationFailed = true;
+              return;
+            }
+
             newDays.push({
               date: date,
-              start: parseInt(row.querySelector(".cfg-start").value),
-              end: parseInt(row.querySelector(".cfg-end").value),
-              slots: parseInt(row.querySelector(".cfg-slots").value),
+              start: start,
+              end: end,
+              step: step,
+              slots: slots
             });
           }
         });
+
+        if (validationFailed) return;
+
         newDays.sort((a, b) => new Date(a.date) - new Date(b.date));
         saveConfigToDb({ locationName: name, days: newDays });
       }
@@ -604,19 +593,21 @@
       }
 
       function loginUser() {
-        if (prompt("Пароль:") === "123") {
+        if (prompt("Пароль для Записи:") === PASS_USER) {
           currentRole = "user";
           updateControls();
           renderSchedule();
-        } else alert("Ошибка");
+        } else alert("Неверный пароль!");
       }
+      
       function loginAdmin() {
-        if (prompt("Пароль Администратора:") === "54321") {
+        if (prompt("Пароль Администратора:") === PASS_ADMIN) {
           currentRole = "admin";
           updateControls();
           renderSchedule();
-        } else alert("Ошибка");
+        } else alert("Неверный пароль!");
       }
+      
       function logout() {
         currentRole = "viewer";
         document.getElementById("configPanel").style.display = "none";
