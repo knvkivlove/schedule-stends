@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <title>График Служения со стендом</title>
+    <title>График Служения</title>
     <style>
         /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА --- */
         :root {
@@ -19,282 +19,132 @@
             --cell-input-text: rgb(134, 255, 245);  /* 11. Цвет текста для записи (ФИО) */
         }
 
-        body {
-            background-color: var(--bg-main-color);
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .location-card {
-            border: 2px solid var(--border-main-color);
-            border-radius: 5px;
-            margin-bottom: 30px;
-            width: 95%;
-            max-width: 1200px;
-            background-color: #000;
-        }
-
-        .card-header {
-            text-align: center;
-            background-color: var(--header-table-bg);
-            color: var(--header-table-text);
-            font-weight: bold;
-            padding: 10px;
-            font-size: 1.2em;
-            border-bottom: 1px solid var(--border-main-color);
-        }
-
-        .date-info {
-            display: flex;
-            gap: 20px;
-            padding: 10px;
-            color: var(--header-date-text);
-            font-weight: bold;
-            border-bottom: 1px solid var(--border-cell-color);
-            background: var(--header-date-bg);
-        }
-
-        /* Обертка для прокрутки только сетки часов */
-        .schedule-wrapper {
-            overflow-x: auto;
-            width: 100%;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .schedule-grid {
-            display: grid;
-            border-collapse: collapse;
-            min-width: 600px; /* Фиксируем ширину сетки для нормального вида */
-        }
-
-        .time-header {
-            background-color: var(--header-time-bg);
-            color: var(--header-time-text);
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            border-right: 1px solid var(--border-cell-color);
-            border-bottom: 1px solid var(--border-cell-color);
-        }
-
-        .slot-cell {
-            border-right: 1px solid var(--border-cell-color);
-            border-bottom: 1px solid var(--border-cell-color);
-            min-height: 40px;
-            position: relative;
-        }
-
-        .slot-input {
-            width: 100%;
-            height: 100%;
-            background: var(--cell-input-bg);
-            border: none;
-            color: var(--cell-input-text);
-            text-align: center;
-            font-size: 1em;
-            padding: 10px 5px;
-            cursor: pointer;
-            box-sizing: border-box;
-            display: block;
-        }
-
+        body { background-color: var(--bg-main-color); color: white; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .location-card { border: 2px solid var(--border-main-color); border-radius: 5px; margin-bottom: 30px; width: 95%; max-width: 1200px; background-color: #000; }
+        .card-header { text-align: center; background-color: var(--header-table-bg); color: var(--header-table-text); font-weight: bold; padding: 10px; font-size: 1.2em; border-bottom: 1px solid var(--border-main-color); }
+        .date-info { display: flex; gap: 20px; padding: 10px; color: var(--header-date-text); font-weight: bold; border-bottom: 1px solid var(--border-cell-color); background: var(--header-date-bg); }
+        .schedule-wrapper { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
+        .schedule-grid { display: grid; border-collapse: collapse; min-width: 600px; }
+        .time-header { background-color: var(--header-time-bg); color: var(--header-time-text); padding: 10px; text-align: center; font-weight: bold; border-right: 1px solid var(--border-cell-color); border-bottom: 1px solid var(--border-cell-color); }
+        .slot-cell { border-right: 1px solid var(--border-cell-color); border-bottom: 1px solid var(--border-cell-color); min-height: 40px; position: relative; }
+        .slot-input { width: 100%; height: 100%; background: var(--cell-input-bg); border: none; color: var(--cell-input-text); text-align: center; font-size: 1em; padding: 10px 5px; cursor: pointer; box-sizing: border-box; display: block; }
         .slot-input:focus { background-color: #333; outline: none; }
         .slot-input.occupied { font-weight: bold; }
         .slot-input:disabled { cursor: not-allowed; color: #aaa; }
         .slot-input.occupied:disabled { color: var(--cell-input-text); }
-
-        .delete-btn {
-            display: none; position: absolute; right: 2px; top: 2px;
-            background: red; color: white; border: none; border-radius: 50%;
-            width: 20px; height: 20px; cursor: pointer; font-size: 12px; z-index: 10;
-        }
-
-        .controls {
-            margin-bottom: 20px; background: #333; padding: 15px; border-radius: 8px;
-            display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;
-        }
-        
-        .status-label {
-            color: white; font-weight: bold; margin-right: 10px;
-            padding: 5px 10px; border-radius: 4px; background: #555;
-        }
-
+        .controls { margin-bottom: 20px; background: #333; padding: 15px; border-radius: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .status-label { color: white; font-weight: bold; margin-right: 10px; padding: 5px 10px; border-radius: 4px; background: #555; }
         button { padding: 10px 20px; cursor: pointer; border: none; font-weight: bold; border-radius: 4px; transition: 0.3s; }
         .btn-user { background-color: var(--border-main-color); color: black; }
         .btn-admin { background-color: rgb(255, 25, 0); color: black; }
         .btn-config { background-color: #00bcd4; color: white; display: none; }
         .btn-logout { background-color: #888; color: white; display: none; }
-
-        #configPanel {
-            display: none; background: #2a2a2a; padding: 20px;
-            border: 2px solid rgb(251, 255, 0); border-radius: 10px;
-            width: 90%; max-width: 850px; margin-bottom: 20px;
-        }
-        
-        .config-row {
-            display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
-            background: #444; padding: 10px; border-radius: 5px; align-items: center;
-        }
-        
+        #configPanel { display: none; background: #2a2a2a; padding: 20px; border: 2px solid rgb(251, 255, 0); border-radius: 10px; width: 90%; max-width: 850px; margin-bottom: 20px; }
+        .config-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; background: #444; padding: 10px; border-radius: 5px; align-items: center; }
         .config-input { padding: 5px; background: #fff; border: none; border-radius: 3px; color: #000; }
         label { margin-right: 2px; color: #ccc; font-size: 0.9em; }
-        #loading { color: var(--border-main-color); font-size: 1.2em; margin-top: 20px; }
-        #errorMsg { color: red; font-weight: bold; display: none; margin-top: 20px; }
     </style>
-
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
     <div class="controls">
         <span id="statusLabel" class="status-label">Инициализация...</span>
-        <button onclick="loginUser()" id="loginUserBtn" class="btn-user" style="display: none">Записаться</button>
-        <button onclick="loginAdmin()" id="loginAdminBtn" class="btn-admin" style="display: none">Администратор</button>
+        <button onclick="loginUser()" id="loginUserBtn" class="btn-user">Записаться</button>
+        <button onclick="loginAdmin()" id="loginAdminBtn" class="btn-admin">Администратор</button>
         <button onclick="toggleConfigPanel()" id="configBtn" class="btn-config">⚙️ Настроить график</button>
         <button onclick="logout()" id="logoutBtn" class="btn-logout">Выйти</button>
     </div>
 
     <div id="configPanel">
         <h3 style="color: orange; margin-top: 0">Конструктор Расписания</h3>
-        <div style="margin-bottom: 15px">
-            <label>Название точки:</label>
-            <input type="text" id="cfgLocationName" class="config-input" style="width: 200px" />
-        </div>
+        <label>Название точки:</label>
+        <input type="text" id="cfgLocationName" class="config-input" style="width: 200px; margin-bottom: 15px;" /><br>
         <div id="daysContainer"></div>
         <button onclick="addDayRow()" style="background: green; color: white; margin-top: 10px">+ Добавить день</button>
         <hr style="border-color: #555; margin: 20px 0" />
         <button onclick="saveConfiguration()" style="background: orange; width: 100%">СОХРАНИТЬ В ОБЛАКО</button>
     </div>
 
-    <div id="loading">Подключение к базе данных...</div>
-    <div id="errorMsg"></div>
     <div id="app"></div>
 
     <script>
-        const PASS_USER = "123";
-        const PASS_ADMIN = "54321";
-        const LOCATION_ID = "stand_dom_torgovli";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCEJanR9v_Pvkqu974w35hBuw2LW73jpPs",
-            authDomain: "stends-1360c.firebaseapp.com",
-            projectId: "stends-1360c",
-            storageBucket: "stends-1360c.firebasestorage.app",
-            messagingSenderId: "987411316790",
-            appId: "1:987411316790:web:6bdc5db2246907ed4d9897",
-            measurementId: "G-E6KVRVFSQL",
-        };
-
-        let db;
+        const PASS_USER = "123", PASS_ADMIN = "54321", LOCATION_ID = "stand_dom_torgovli";
+        const firebaseConfig = { apiKey: "AIzaSyCEJanR9v_Pvkqu974w35hBuw2LW73jpPs", authDomain: "stends-1360c.firebaseapp.com", projectId: "stends-1360c", storageBucket: "stends-1360c.firebasestorage.app", messagingSenderId: "987411316790", appId: "1:987411316790:web:6bdc5db2246907ed4d9897" };
         firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
+        const db = firebase.database();
+        let currentRole = "viewer", scheduleData = { config: { days: [] }, slots: {} };
 
-        let currentRole = "viewer";
-        let scheduleData = { config: {}, slots: {} };
-
-        db.ref("locations/" + LOCATION_ID).on("value", (snapshot) => {
-            document.getElementById("loading").style.display = "none";
-            const data = snapshot.val();
-            scheduleData.config = data ? (data.config || { locationName: "Настройте график", days: [] }) : { locationName: "Настройте график", days: [] };
-            scheduleData.slots = data ? (data.slots || {}) : {};
+        db.ref("locations/" + LOCATION_ID).on("value", (snap) => {
+            const data = snap.val() || {};
+            scheduleData.config = data.config || { locationName: "Без названия", days: [] };
+            scheduleData.slots = data.slots || {};
             renderSchedule();
-            updateControls();
         });
 
         function renderSchedule() {
-            const appDiv = document.getElementById("app");
-            appDiv.innerHTML = "";
-            if (!scheduleData.config.days || scheduleData.config.days.length === 0) {
-                appDiv.innerHTML = '<h2 style="color:gray; text-align:center;">Расписание не настроено.</h2>';
-                return;
-            }
-            scheduleData.config.days.forEach((dayData) => createDayTable(scheduleData.config.locationName, dayData, scheduleData.slots, appDiv));
-        }
-
-        function createDayTable(locName, dayData, slots, container) {
-            const card = document.createElement("div");
-            card.className = "location-card";
-            const ruDate = dayData.date.split("-").reverse().join(".");
-            const dayName = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"][new Date(dayData.date).getDay()];
-            const step = parseInt(dayData.step || 1);
-
-            card.innerHTML = `
-                <div class="card-header">${locName}</div>
-                <div class="date-info">
-                    <span>${ruDate}</span> <span>${dayName}</span>
-                    <span style="margin-left:auto;">${dayData.start}:00 - ${dayData.end}:00</span>
-                </div>
-            `;
-
-            const intervalsCount = Math.floor((parseInt(dayData.end) - parseInt(dayData.start)) / step);
-            const grid = document.createElement("div");
-            grid.className = "schedule-grid";
-            grid.style.gridTemplateColumns = `repeat(${intervalsCount}, 1fr)`;
-
-            for (let i = 0; i < intervalsCount; i++) {
-                const timeCell = document.createElement("div");
-                timeCell.className = "time-header";
-                timeCell.innerText = `${parseInt(dayData.start) + (i * step)}-${parseInt(dayData.start) + (i + 1) * step}`;
-                grid.appendChild(timeCell);
-            }
-
-            for (let row = 0; row < dayData.slots; row++) {
-                for (let i = 0; i < intervalsCount; i++) {
-                    const currentStart = parseInt(dayData.start) + (i * step);
-                    const slotId = `slot_${dayData.date.replace(/\./g, "-")}_h${currentStart}step${step}_r${row}`;
-                    const cell = document.createElement("div");
-                    cell.className = "slot-cell";
-                    const input = document.createElement("input");
-                    input.className = "slot-input";
-                    input.value = slots[slotId] || "";
-                    if(slots[slotId]) input.classList.add("occupied");
-                    
-                    input.disabled = (currentRole === 'viewer' || (currentRole === 'user' && slots[slotId]));
-                    
-                    input.onchange = (e) => e.target.value ? db.ref("locations/" + LOCATION_ID + "/slots/" + slotId).set(e.target.value) : db.ref("locations/" + LOCATION_ID + "/slots/" + slotId).remove();
-                    
-                    cell.appendChild(input);
-                    grid.appendChild(cell);
+            const app = document.getElementById("app"); app.innerHTML = "";
+            scheduleData.config.days.forEach(day => {
+                const card = document.createElement("div"); card.className = "location-card";
+                const d = new Date(day.date);
+                const dayName = ["ВОСКРЕСЕНЬЕ", "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"][d.getDay()];
+                card.innerHTML = `<div class="card-header">${scheduleData.config.locationName}</div><div class="date-info"><span>${day.date.split('-').reverse().join('.')}</span> <span>${dayName}</span><span style="margin-left:auto;">${day.start}:00 - ${day.end}:00</span></div>`;
+                
+                const step = parseInt(day.step || 1), intervals = Math.floor((day.end - day.start) / step);
+                const grid = document.createElement("div"); grid.className = "schedule-grid"; grid.style.gridTemplateColumns = `repeat(${intervals}, 1fr)`;
+                
+                for(let i=0; i<intervals; i++) {
+                    const timeHead = document.createElement("div"); timeHead.className = "time-header"; timeHead.innerText = `${day.start + i*step}-${day.start + (i+1)*step}`;
+                    grid.appendChild(timeHead);
                 }
-            }
-            const wrapper = document.createElement("div");
-            wrapper.className = "schedule-wrapper";
-            wrapper.appendChild(grid);
-            card.appendChild(wrapper);
-            container.appendChild(card);
+                for(let r=0; r<day.slots; r++) {
+                    for(let i=0; i<intervals; i++) {
+                        const sId = `slot_${day.date}_h${day.start + i*step}s${step}_r${r}`;
+                        const input = document.createElement("input"); input.className = "slot-input"; input.value = scheduleData.slots[sId] || "";
+                        if(scheduleData.slots[sId]) input.classList.add("occupied");
+                        input.disabled = (currentRole === 'viewer' || (currentRole === 'user' && scheduleData.slots[sId]));
+                        input.onchange = (e) => e.target.value ? db.ref("locations/" + LOCATION_ID + "/slots/" + sId).set(e.target.value) : db.ref("locations/" + LOCATION_ID + "/slots/" + sId).remove();
+                        const cell = document.createElement("div"); cell.className = "slot-cell"; cell.appendChild(input); grid.appendChild(cell);
+                    }
+                }
+                const wrap = document.createElement("div"); wrap.className = "schedule-wrapper"; wrap.appendChild(grid); card.appendChild(wrap);
+                app.appendChild(card);
+            });
         }
 
-        // --- ФУНКЦИИ УПРАВЛЕНИЯ ОСТАЛИСЬ ПРЕЖНИМИ ---
-        function toggleConfigPanel() { document.getElementById("configPanel").style.display = (document.getElementById("configPanel").style.display === "block" ? "none" : "block"); }
-        function addDayRow() { const container = document.getElementById("daysContainer"); addDayRowUI(container, { date: "", start: 10, end: 16, slots: 2, step: 1 }); }
-        function addDayRowUI(container, dayData) {
-            const div = document.createElement("div");
-            div.className = "config-row";
-            div.innerHTML = `<label>Дата:</label><input type="date" class="cfg-date config-input" value="${dayData.date}"> <label>C:</label><select class="cfg-start config-input">${generateHourOptions(dayData.start)}</select> <label>До:</label><select class="cfg-end config-input">${generateHourOptions(dayData.end)}</select> <label>Шаг:</label><select class="cfg-step config-input"><option value="1" ${dayData.step == 1 ? "selected" : ""}>1ч</option><option value="2" ${dayData.step == 2 ? "selected" : ""}>2ч</option></select> <label>Мест:</label><input type="number" class="cfg-slots config-input" value="${dayData.slots}" style="width:40px;"> <button onclick="this.parentElement.remove()" style="background:red; color:white;">Удалить</button>`;
+        function toggleConfigPanel() {
+            const p = document.getElementById("configPanel");
+            p.style.display = (p.style.display === "block" ? "none" : "block");
+            if(p.style.display === "block") {
+                document.getElementById("cfgLocationName").value = scheduleData.config.locationName;
+                const cont = document.getElementById("daysContainer"); cont.innerHTML = "";
+                scheduleData.config.days.forEach(d => addDayRowUI(cont, d));
+            }
+        }
+
+        function addDayRowUI(container, day) {
+            const div = document.createElement("div"); div.className = "config-row";
+            div.innerHTML = `<label>Дата:</label><input type="date" class="cfg-date config-input" value="${day.date}"> <label>С:</label><select class="cfg-start config-input">${generateOptions(day.start)}</select> <label>До:</label><select class="cfg-end config-input">${generateOptions(day.end)}</select> <label>Шаг:</label><select class="cfg-step config-input"><option value="1" ${day.step==1?'selected':''}>1ч</option><option value="2" ${day.step==2?'selected':''}>2ч</option></select> <label>Мест:</label><input type="number" class="cfg-slots config-input" value="${day.slots}" style="width:40px;"> <button onclick="this.parentElement.remove()" style="background:red; color:white;">Удалить</button>`;
             container.appendChild(div);
         }
-        function generateHourOptions(selected) { let opts = ""; for (let i = 6; i <= 22; i++) opts += `<option value="${i}" ${i == selected ? "selected" : ""}>${i}:00</option>`; return opts; }
+        function generateOptions(sel) { let out=""; for(let i=6; i<23; i++) out+=`<option value="${i}" ${i==sel?'selected':''}>${i}:00</option>`; return out; }
+        function addDayRow() { addDayRowUI(document.getElementById("daysContainer"), {date:"", start:10, end:16, step:1, slots:2}); }
         function saveConfiguration() {
             const rows = document.querySelectorAll(".config-row");
             const newDays = [];
-            rows.forEach(row => {
-                newDays.push({ date: row.querySelector('.cfg-date').value, start: parseInt(row.querySelector('.cfg-start').value), end: parseInt(row.querySelector('.cfg-end').value), step: parseInt(row.querySelector('.cfg-step').value), slots: parseInt(row.querySelector('.cfg-slots').value) });
-            });
+            rows.forEach(r => newDays.push({ date: r.querySelector('.cfg-date').value, start: parseInt(r.querySelector('.cfg-start').value), end: parseInt(r.querySelector('.cfg-end').value), step: parseInt(r.querySelector('.cfg-step').value), slots: parseInt(r.querySelector('.cfg-slots').value) }));
             db.ref("locations/" + LOCATION_ID + "/config").set({ locationName: document.getElementById("cfgLocationName").value, days: newDays }).then(() => { alert("Сохранено!"); toggleConfigPanel(); });
         }
+        function loginUser() { if(prompt("Пароль:") === PASS_USER) { currentRole="user"; updateControls(); renderSchedule(); } }
+        function loginAdmin() { if(prompt("Пароль:") === PASS_ADMIN) { currentRole="admin"; updateControls(); renderSchedule(); } }
+        function logout() { currentRole="viewer"; updateControls(); renderSchedule(); }
         function updateControls() {
             document.getElementById("loginUserBtn").style.display = (currentRole === 'viewer' ? "inline-block" : "none");
             document.getElementById("loginAdminBtn").style.display = (currentRole === 'viewer' ? "inline-block" : "none");
             document.getElementById("configBtn").style.display = (currentRole === 'admin' ? "inline-block" : "none");
             document.getElementById("logoutBtn").style.display = (currentRole !== 'viewer' ? "inline-block" : "none");
         }
-        function loginUser() { if (prompt("Пароль:") === PASS_USER) { currentRole = "user"; updateControls(); renderSchedule(); } }
-        function loginAdmin() { if (prompt("Пароль:") === PASS_ADMIN) { currentRole = "admin"; updateControls(); renderSchedule(); } }
-        function logout() { currentRole = "viewer"; updateControls(); renderSchedule(); }
+        updateControls();
     </script>
 </body>
 </html>
