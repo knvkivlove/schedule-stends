@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>График Служения со стендом</title>
     <style>
       /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА (МЕНЯЙТЕ ТОЛЬКО ЗДЕСЬ) --- */
@@ -35,18 +35,16 @@
       }
 
      /* --- Сетка расписания --- */
-.location-card {
+    .location-card {
         border: 2px solid var(--border-main-color);
         border-radius: 5px;
         margin-bottom: 30px;
-        width: 95%; 
-        max-width: 1200px;
-        overflow-x: auto; 
+        width: 100vw; /* Занимает всю ширину экрана */
+        max-width: 100%;
+        overflow-x: auto; /* Включает скролл */
         background-color: #000;
-        -webkit-overflow-scrolling: touch; 
-        /* ДОБАВЬТЕ ЭТИ ДВЕ СТРОКИ: */
-        touch-action: pan-x; 
-        min-width: 300px;
+        -webkit-overflow-scrolling: touch;
+        touch-action: auto; /* Позволяет любые жесты */
     }
 
       .card-header {
@@ -78,8 +76,8 @@
     .schedule-grid {
         display: grid;
         border-collapse: collapse;
-        min-width: 800px; /* Это обеспечивает достаточно места для всех часов */
-        width: 100%;      /* Растягиваем на всю доступную ширину */
+        /* Устанавливаем ширину, которая физически шире любого телефона */
+        min-width: 1000px; 
     }
 
       .time-header {
