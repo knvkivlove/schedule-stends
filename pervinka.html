@@ -35,15 +35,18 @@
       }
 
      /* --- Сетка расписания --- */
-    .location-card {
+.location-card {
         border: 2px solid var(--border-main-color);
         border-radius: 5px;
         margin-bottom: 30px;
-        width: 95%; /* Можно оставить */
+        width: 95%; 
         max-width: 1200px;
-        overflow-x: auto; /* Это включает скролл */
+        overflow-x: auto; 
         background-color: #000;
-        -webkit-overflow-scrolling: touch; /* Плавный скролл на iPhone/Android */
+        -webkit-overflow-scrolling: touch; 
+        /* ДОБАВЬТЕ ЭТИ ДВЕ СТРОКИ: */
+        touch-action: pan-x; 
+        min-width: 300px;
     }
 
       .card-header {
@@ -72,11 +75,11 @@
         margin-right: 15px; /* Отступ между датой и днем */
       }
 
-      .schedule-grid {
+    .schedule-grid {
         display: grid;
         border-collapse: collapse;
-        /* ГЛАВНОЕ: Устанавливаем ширину, которая не даст ячейкам сжаться */
-        min-width: 800px; 
+        min-width: 800px; /* Это обеспечивает достаточно места для всех часов */
+        width: 100%;      /* Растягиваем на всю доступную ширину */
     }
 
       .time-header {
