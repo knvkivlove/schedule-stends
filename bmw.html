@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <title>График Служения</title>
+    <title>График Служения BMW</title>
     <style>
         /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА --- */
         :root {
@@ -63,7 +63,8 @@
         <div id="daysContainer"></div>
         <button onclick="addDayRow()" style="background: green; color: white; margin-top: 10px">+ Добавить день</button>
         <hr style="border-color: #555; margin: 20px 0" />
-        <button onclick="saveConfiguration()" style="background: orange; width: 100%">СОХРАНИТЬ В ОБЛАКО</button>
+        <button onclick="saveConfiguration()" style="background: orange; width: 100%; margin-bottom: 10px;">СОХРАНИТЬ В ОБЛАКО</button>
+        <button onclick="downloadDatabaseCSV()" style="background: #2196F3; color: white; width: 100%">📥 СКАЧАТЬ БАЗУ ЗАПИСЕЙ (Excel)</button>
     </div>
 
     <div id="app"></div>
@@ -144,6 +145,45 @@
             document.getElementById("configBtn").style.display = (currentRole === 'admin' ? "inline-block" : "none");
             document.getElementById("logoutBtn").style.display = (currentRole !== 'viewer' ? "inline-block" : "none");
         }
+        
+        // --- НОВАЯ ФУНКЦИЯ ДЛЯ СКАЧИВАНИЯ БАЗЫ ---
+        function downloadDatabaseCSV() {
+            const locName = scheduleData.config.locationName || "Стенд";
+            let csvContent = "Стенд,Дата,Время,Имя\n";
+            const slots = scheduleData.slots;
+
+            for (const slotId in slots) {
+                const name = slots[slotId];
+                const parts = slotId.split('_');
+
+                if (parts.length >= 3) {
+                    const rawDate = parts[1];
+                    const date = rawDate.replace(/-/g, '.');
+
+                    let timePart = parts[2];
+                    let hour = timePart.replace('h', '').split('s')[0];
+                    let time = hour + ':00';
+
+                    csvContent += `${locName},${date},${time},${name}\n`;
+                }
+            }
+
+            const bom = "\uFEFF"; 
+            const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            const safeFileName = locName.replace(/\s+/g, '_') + "_baza.csv";
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", safeFileName); 
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link); 
+        }
+
         updateControls();
     </script>
 </body>
