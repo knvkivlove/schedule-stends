@@ -2,21 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <title>График Служения</title>
+    <title>График Служения Pervinka</title>
     <style>
         /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА --- */
         :root {
             --bg-main-color: #1a1a1a;          /* 1. Цвет бэкграунда основной */
             --border-main-color: rgb(250, 170, 5);  /* 2. Цвет рамки основной */
             --border-cell-color: #ffffff;      /* 3. Цвет рамки для ячеек */
-            --header-table-bg: #000000;        /* 4. Цвет шапки таблицы (название точки) */
-            --header-table-text: rgb(250, 250, 250);  /* 5. Цвет текста заголовка в шапке таблицы */
+            --header-table-bg: #FF8F00;        /* 4. Цвет шапки таблицы (название точки) */
+            --header-table-text: rgb(0, 0, 0);  /* 5. Цвет текста заголовка в шапке таблицы */
             --header-date-bg: #222222;        /* 6. Цвет шапки для названия дней и даты */
             --header-date-text: rgb(250, 250, 250);  /* 7. Цвет текста для названия дней и даты */
             --header-time-bg: #051d3a;         /* 8. Цвет шапки для временных интервалов */
             --header-time-text: rgb(250, 250, 250);  /* 9. Цвет текста для времени */
             --cell-input-bg: transparent;      /* 10. Цвет ячеек для записи (фон) */
-            --cell-input-text: rgb(134, 255, 245);  /* 11. Цвет текста для записи (ФИО) */
+            --cell-input-text: rgb(255, 255, 255);  /* 11. Цвет текста для записи (ФИО) */
         }
 
         body { background-color: var(--bg-main-color); color: white; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
@@ -63,7 +63,8 @@
         <div id="daysContainer"></div>
         <button onclick="addDayRow()" style="background: green; color: white; margin-top: 10px">+ Добавить день</button>
         <hr style="border-color: #555; margin: 20px 0" />
-        <button onclick="saveConfiguration()" style="background: orange; width: 100%">СОХРАНИТЬ В ОБЛАКО</button>
+        <button onclick="saveConfiguration()" style="background: orange; width: 100%; margin-bottom: 10px;">СОХРАНИТЬ В ОБЛАКО</button>
+        <button onclick="downloadDatabaseCSV()" style="background: #2196F3; color: white; width: 100%;">📥 СКАЧАТЬ БАЗУ ЗАПИСЕЙ (Excel)</button>
     </div>
 
     <div id="app"></div>
@@ -144,6 +145,51 @@
             document.getElementById("configBtn").style.display = (currentRole === 'admin' ? "inline-block" : "none");
             document.getElementById("logoutBtn").style.display = (currentRole !== 'viewer' ? "inline-block" : "none");
         }
+
+        // --- ФУНКЦИЯ ДЛЯ СКАЧИВАНИЯ БАЗЫ ---
+        function downloadDatabaseCSV() {
+            const locName = scheduleData.config.locationName || "Стенд";
+            let csvContent = "Стенд,Дата,Время,Имя\n";
+            const slots = scheduleData.slots;
+
+            // Проходим по всем записям
+            for (const slotId in slots) {
+                const name = slots[slotId];
+                const parts = slotId.split('_');
+
+                // Формат ID: slot_дата_hВремяsШаг_rМесто
+                if (parts.length >= 4) {
+                    const rawDate = parts[1];
+                    const date = rawDate.replace(/-/g, '.');
+
+                    const timePart = parts[2]; 
+                    // Достаем час из "h10s1"
+                    const hour = timePart.substring(timePart.indexOf('h') + 1, timePart.indexOf('s'));
+                    const time = hour + ':00';
+
+                    // Формируем строчку для нашего Excel
+                    csvContent += `${locName},${date},${time},${name}\n`;
+                }
+            }
+
+            // Устанавливаем маркер BOM, чтобы Excel корректно отображал русские символы
+            const bom = "\uFEFF"; 
+            const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            const safeFileName = locName.replace(/\s+/g, '_') + "_baza.csv";
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            // Запускаем скачивание
+            link.setAttribute("href", url);
+            link.setAttribute("download", safeFileName); 
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link); 
+        }
+
         updateControls();
     </script>
 </body>
