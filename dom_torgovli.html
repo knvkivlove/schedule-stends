@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <title>График Служения TD</title>
+    <title>График TD</title>
     <style>
         /* --- ГЛОБАЛЬНЫЕ НАСТРОЙКИ ЦВЕТА --- */
         :root {
@@ -43,6 +43,9 @@
         .config-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; background: #444; padding: 10px; border-radius: 5px; align-items: center; }
         .config-input { padding: 5px; background: #fff; border: none; border-radius: 3px; color: #000; }
         label { margin-right: 2px; color: #ccc; font-size: 0.9em; }
+
+        /* Обновленный крестик удаления (красный, без фона, 12px) */
+        .delete-btn { display: none; position: absolute; right: 2px; top: 2px; background: transparent; color: red; border: none; width: 16px; height: 16px; cursor: pointer; font-size: 12px; font-weight: bold; z-index: 10; padding: 0; line-height: 1; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -61,10 +64,10 @@
         <label>Название точки:</label>
         <input type="text" id="cfgLocationName" class="config-input" style="width: 200px; margin-bottom: 15px;" /><br>
         <div id="daysContainer"></div>
-        <button onclick="addDayRow()" style="background: green; color: white; margin-top: 10px">+ Добавить день</button>
+        <button onclick="addDayRow()" style="background: green; color: white; margin-top: 10px">+ Добавить день / интервал</button>
         <hr style="border-color: #555; margin: 20px 0" />
-        <button onclick="saveConfiguration()" style="background: orange; width: 100%">СОХРАНИТЬ В ОБЛАКО</button>
-        <button onclick="downloadDatabaseCSV()" style="background: #2196F3; color: white; width: 100%; margin-top: 10px;">📥 СКАЧАТЬ БАЗУ ЗАПИСЕЙ (Excel)</button>
+        <button onclick="saveConfiguration()" style="background: orange; width: 100%; margin-bottom: 10px;">СОХРАНИТЬ В ОБЛАКО</button>
+        <button onclick="downloadDatabaseCSV()" style="background: #2196F3; color: white; width: 100%;">📥 СКАЧАТЬ БАЗУ ЗАПИСЕЙ (Excel)</button>
     </div>
 
     <div id="app"></div>
@@ -84,33 +87,140 @@
         });
 
         function renderSchedule() {
-            const app = document.getElementById("app"); app.innerHTML = "";
+            const app = document.getElementById("app"); 
+            app.innerHTML = "";
+            
+            if (!scheduleData.config.days || scheduleData.config.days.length === 0) {
+                app.innerHTML = '<h2 style="color:gray; text-align:center;">Расписание не настроено. Зайди как Администратор.</h2>';
+                return;
+            }
+
+            // Группируем наши интервалы по датам
+            const groupedDays = {};
             scheduleData.config.days.forEach(day => {
-                const card = document.createElement("div"); card.className = "location-card";
-                const d = new Date(day.date);
-                const dayName = ["ВОСКРЕСЕНЬЕ", "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"][d.getDay()];
-                card.innerHTML = `<div class="card-header">${scheduleData.config.locationName}</div><div class="date-info"><span>${day.date.split('-').reverse().join('.')}</span> <span>${dayName}</span><span style="margin-left:auto;">${day.start}:00 - ${day.end}:00</span></div>`;
-                
-                const step = parseInt(day.step || 1), intervals = Math.floor((day.end - day.start) / step);
-                const grid = document.createElement("div"); grid.className = "schedule-grid"; grid.style.gridTemplateColumns = `repeat(${intervals}, 1fr)`;
-                
-                for(let i=0; i<intervals; i++) {
-                    const timeHead = document.createElement("div"); timeHead.className = "time-header"; timeHead.innerText = `${day.start + i*step}-${day.start + (i+1)*step}`;
-                    grid.appendChild(timeHead);
-                }
-                for(let r=0; r<day.slots; r++) {
-                    for(let i=0; i<intervals; i++) {
-                        const sId = `slot_${day.date}_h${day.start + i*step}s${step}_r${r}`;
-                        const input = document.createElement("input"); input.className = "slot-input"; input.value = scheduleData.slots[sId] || "";
-                        if(scheduleData.slots[sId]) input.classList.add("occupied");
-                        input.disabled = (currentRole === 'viewer' || (currentRole === 'user' && scheduleData.slots[sId]));
-                        input.onchange = (e) => e.target.value ? db.ref("locations/" + LOCATION_ID + "/slots/" + sId).set(e.target.value) : db.ref("locations/" + LOCATION_ID + "/slots/" + sId).remove();
-                        const cell = document.createElement("div"); cell.className = "slot-cell"; cell.appendChild(input); grid.appendChild(cell);
-                    }
-                }
-                const wrap = document.createElement("div"); wrap.className = "schedule-wrapper"; wrap.appendChild(grid); card.appendChild(wrap);
-                app.appendChild(card);
+                if (!groupedDays[day.date]) groupedDays[day.date] = [];
+                groupedDays[day.date].push(day);
             });
+
+            // Проходимся по каждой уникальной дате для построения горизонтальной таблицы
+            for (const dateString in groupedDays) {
+                createCombinedDayTable(scheduleData.config.locationName, dateString, groupedDays[dateString], scheduleData.slots, app);
+            }
+        }
+
+        function createCombinedDayTable(locName, dateString, intervals, slots, container) {
+            const card = document.createElement("div"); 
+            card.className = "location-card";
+
+            const dateObj = new Date(dateString);
+            const daysOfWeek = ["ВОСКРЕСЕНЬЕ", "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"];
+            const dayName = isNaN(dateObj.getDay()) ? "ДЕНЬ" : daysOfWeek[dateObj.getDay()];
+            const ruDate = dateString.split('-').reverse().join('.');
+
+            card.innerHTML = `
+                <div class="card-header">${locName}</div>
+                <div class="date-info">
+                    <span>${ruDate}</span> 
+                    <span>${dayName}</span>
+                </div>
+            `;
+
+            let totalColumns = 0;
+            let maxSlots = 0;
+            const columnsData = [];
+
+            // Собираем данные по всем настроенным часам для текущего дня
+            intervals.forEach((dayData, intervalIndex) => {
+                const step = parseInt(dayData.step || 1);
+                const startH = parseInt(dayData.start);
+                const endH = parseInt(dayData.end);
+                const intSlots = parseInt(dayData.slots || 1);
+                
+                if (intSlots > maxSlots) maxSlots = intSlots;
+
+                const intervalsCount = Math.floor((endH - startH) / step);
+                totalColumns += intervalsCount;
+
+                for(let i = 0; i < intervalsCount; i++) {
+                    const currentStart = startH + (i * step);
+                    columnsData.push({
+                        start: currentStart,
+                        end: currentStart + step,
+                        step: step,
+                        date: dayData.date,
+                        maxRow: intSlots,
+                        isNewInterval: (i === 0 && intervalIndex > 0) 
+                    });
+                }
+            });
+
+            const wrap = document.createElement("div"); 
+            wrap.className = "schedule-wrapper";
+
+            const grid = document.createElement("div"); 
+            grid.className = "schedule-grid"; 
+            grid.style.gridTemplateColumns = `repeat(${totalColumns}, 1fr)`;
+
+            // Отрисовка шапки с часами (горизонтальная линия)
+            columnsData.forEach(col => {
+                const timeHead = document.createElement("div"); 
+                timeHead.className = "time-header"; 
+                timeHead.innerText = `${col.start}-${col.end}`;
+                
+                // Рисуем разделительную линию, если начался новый интервал времени
+                if (col.isNewInterval) {
+                    timeHead.style.borderLeft = "3px solid var(--border-main-color)";
+                }
+                grid.appendChild(timeHead);
+            });
+
+            // Отрисовка ячеек для записей
+            for(let r = 0; r < maxSlots; r++) {
+                columnsData.forEach(col => {
+                    const cell = document.createElement("div"); 
+                    cell.className = "slot-cell"; 
+                    if (col.isNewInterval) {
+                        cell.style.borderLeft = "3px solid var(--border-main-color)";
+                    }
+                    
+                    if (r < col.maxRow) {
+                        const sId = `slot_${col.date}_h${col.start}s${col.step}_r${r}`;
+                        const input = document.createElement("input"); 
+                        input.className = "slot-input"; 
+                        input.id = sId;
+
+                        const savedName = slots[sId];
+                        if(savedName) {
+                            input.value = savedName;
+                            input.classList.add("occupied");
+                        } else {
+                            input.placeholder = "+";
+                        }
+
+                        input.disabled = (currentRole === 'viewer' || (currentRole === 'user' && savedName));
+                        
+                        input.onchange = (e) => e.target.value.trim() ? db.ref("locations/" + LOCATION_ID + "/slots/" + sId).set(e.target.value.trim()) : db.ref("locations/" + LOCATION_ID + "/slots/" + sId).remove();
+                        
+                        if (currentRole === "admin" && savedName) {
+                            const delBtn = document.createElement("button");
+                            delBtn.className = "delete-btn";
+                            delBtn.innerText = "x";
+                            delBtn.style.display = "block";
+                            delBtn.onclick = () => { if (confirm("Удалить запись?")) db.ref("locations/" + LOCATION_ID + "/slots/" + sId).remove(); };
+                            cell.appendChild(delBtn);
+                        }
+                        cell.appendChild(input); 
+                    } else {
+                         // Заглушка, если в этом интервале меньше мест, чем в максимальном за день
+                         cell.style.backgroundColor = "rgba(0,0,0,0.3)";
+                    }
+                    grid.appendChild(cell);
+                });
+            }
+
+            wrap.appendChild(grid); 
+            card.appendChild(wrap);
+            container.appendChild(card);
         }
 
         function toggleConfigPanel() {
@@ -128,17 +238,22 @@
             div.innerHTML = `<label>Дата:</label><input type="date" class="cfg-date config-input" value="${day.date}"> <label>С:</label><select class="cfg-start config-input">${generateOptions(day.start)}</select> <label>До:</label><select class="cfg-end config-input">${generateOptions(day.end)}</select> <label>Шаг:</label><select class="cfg-step config-input"><option value="1" ${day.step==1?'selected':''}>1ч</option><option value="2" ${day.step==2?'selected':''}>2ч</option></select> <label>Мест:</label><input type="number" class="cfg-slots config-input" value="${day.slots}" style="width:40px;"> <button onclick="this.parentElement.remove()" style="background:red; color:white;">Удалить</button>`;
             container.appendChild(div);
         }
+        
         function generateOptions(sel) { let out=""; for(let i=6; i<23; i++) out+=`<option value="${i}" ${i==sel?'selected':''}>${i}:00</option>`; return out; }
+        
         function addDayRow() { addDayRowUI(document.getElementById("daysContainer"), {date:"", start:10, end:16, step:1, slots:2}); }
+        
         function saveConfiguration() {
             const rows = document.querySelectorAll(".config-row");
             const newDays = [];
             rows.forEach(r => newDays.push({ date: r.querySelector('.cfg-date').value, start: parseInt(r.querySelector('.cfg-start').value), end: parseInt(r.querySelector('.cfg-end').value), step: parseInt(r.querySelector('.cfg-step').value), slots: parseInt(r.querySelector('.cfg-slots').value) }));
             db.ref("locations/" + LOCATION_ID + "/config").set({ locationName: document.getElementById("cfgLocationName").value, days: newDays }).then(() => { alert("Сохранено!"); toggleConfigPanel(); });
         }
+        
         function loginUser() { if(prompt("Пароль:") === PASS_USER) { currentRole="user"; updateControls(); renderSchedule(); } }
         function loginAdmin() { if(prompt("Пароль:") === PASS_ADMIN) { currentRole="admin"; updateControls(); renderSchedule(); } }
         function logout() { currentRole="viewer"; updateControls(); renderSchedule(); }
+        
         function updateControls() {
             document.getElementById("loginUserBtn").style.display = (currentRole === 'viewer' ? "inline-block" : "none");
             document.getElementById("loginAdminBtn").style.display = (currentRole === 'viewer' ? "inline-block" : "none");
@@ -146,7 +261,6 @@
             document.getElementById("logoutBtn").style.display = (currentRole !== 'viewer' ? "inline-block" : "none");
         }
 
-        // --- ФУНКЦИЯ ДЛЯ СКАЧИВАНИЯ БАЗЫ ---
         function downloadDatabaseCSV() {
             const locName = scheduleData.config.locationName || "Стенд";
             let csvContent = "Стенд,Дата,Время,Имя\n";
@@ -156,13 +270,11 @@
                 const name = slots[slotId];
                 const parts = slotId.split('_');
 
-                // Твой формат ID: slot_2024-05-19_h10s1_r0
                 if (parts.length >= 4) {
                     const rawDate = parts[1];
                     const date = rawDate.replace(/-/g, '.');
 
-                    const timePart = parts[2]; // Пример: "h10s1"
-                    // Извлекаем только часы, отсекая букву 'h' и всё, что идет после 's'
+                    const timePart = parts[2]; 
                     const hour = timePart.substring(timePart.indexOf('h') + 1, timePart.indexOf('s'));
                     const time = hour + ':00';
 
