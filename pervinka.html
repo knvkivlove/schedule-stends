@@ -241,7 +241,7 @@
         
         function generateOptions(sel) { let out=""; for(let i=6; i<23; i++) out+=`<option value="${i}" ${i==sel?'selected':''}>${i}:00</option>`; return out; }
         
-        function addDayRow() { addDayRowUI(document.getElementById("daysContainer"), {date:"", start:10, end:16, step:1, slots:2}); }
+        function addDayRow() { addDayRowUI(document.getElementById("daysContainer"), {date:"", start:8, end:20, step:1, slots:2}); }
         
         function saveConfiguration() {
             const rows = document.querySelectorAll(".config-row");
